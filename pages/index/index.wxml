@@ -1,0 +1,26 @@
+<view wx:if="{{user.name !== ''}}">
+  <view id="app">
+    <text class="nameInfo">欢迎 {{user.name}} 使用表白墙</text>
+    <view wx:for="{{ tags }}" wx:key="id" wx:id="id" class="tag" style="color:{{item.color}}; background-color:{{item.bgColor}}; opacity:{{item.opacity}}; font-size:{{item.size}}em; z-index:{{item.zIndex}}; top:{{item.y}}px; left:{{item.x}}px;">
+      {{item.name}}：{{ item.message }}
+      <view class="islike">
+        <view wx:if="{{item.name === user.name}}" bindtap="delete" data-index="{{ index }}" data-tag="{{ item }}" hover-class="hover">❎</view>
+        <view wx:else hover-class="hover"> </view>
+        <view class="aa">
+          <view bindtap="likes" data-index="{{ index }}" data-tag="{{ item }}" hover-class="hover">👍🏻({{item.likes}})</view>
+          <view bindtap="dislikes" data-index="{{ index }}" data-tag="{{ item }}" hover-class="hover">👎🏻({{item.dislikes}})</view>
+        </view>
+      </view>
+    </view>
+  </view>
+  <view class="send">
+    <image src="{{user.avatarUrl}}"></image>
+    <input type="text" name="message" value="{{message}}" bindinput="messageInput" placeholder="请在此处输入留言"/>
+    <view class="send-btn" hover-class="btn-hover" bindtap="sendClick">发送</view>
+  </view>
+</view>
+
+<view wx-if="{{user.name===''}}">
+  <image class="img" src="https://z3.ax1x.com/2021/06/25/RQLoEq.jpg"></image>
+  <button class="login" bindtap="getUserInfo">微信授权登录</button>
+</view>
