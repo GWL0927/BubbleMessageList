@@ -1,6 +1,6 @@
 <view wx:if="{{user.name !== ''}}">
   <view id="app">
-    <text class="nameInfo">欢迎 {{user.name}} 使用表白墙</text>
+    <text class="nameInfo">欢迎 {{user.name}} 使用留言板</text>
     <view wx:for="{{ tags }}" wx:key="id" wx:id="id" class="tag" style="color:{{item.color}}; background-color:{{item.bgColor}}; opacity:{{item.opacity}}; font-size:{{item.size}}em; z-index:{{item.zIndex}}; top:{{item.y}}px; left:{{item.x}}px;">
       {{item.name}}：{{ item.message }}
       <view class="islike">

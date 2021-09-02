@@ -1,7 +1,6 @@
 // index.js
 Page({
   data: {
-    initialized: false,
     wall: { width: 0, height: 0 },
     tags: [],
     message: '',
@@ -28,7 +27,7 @@ Page({
         'Content-Type': 'application/json'
       },
       success: function (res) {
-        const result = []
+        let result = []
         for (let i = 0; i < res.data.length; i++) {
           const color = Math.floor(Math.random() * 0xFFFFFF)
           const tag = {
@@ -39,12 +38,12 @@ Page({
             likes: res.data[i].likes,
             dislikes: res.data[i].dislikes,
             x: 0, y: 0, 
-            dx: Math.random() * 0.5, 
-            dy: Math.random() * 0.5, 
+            dx: Math.random() * 1, 
+            dy: Math.random() * 1, 
             zIndex: 0,
             color: `#${color.toString(16)}`, 
             bgColor: `#${(0xFFFFFF - color).toString(16)}`,
-            opacity: .6,
+            opacity: .7,
             size: 0.8+0.1*res.data[i].likes-0.1*res.data[i].dislikes
           }
           result.push(tag)
@@ -52,20 +51,26 @@ Page({
         that.setData({ tags: result })
 
         setInterval(function () {
-          that.autoDel()
-
-          for (let j = 0; j < that.data.tags.length; j++) {
-            const obj = wx.createSelectorQuery()
-            obj.selectAll('.tag').boundingClientRect()
-            obj.exec(function (rect) {
-              const height = rect[0][j].height
-              const width = rect[0][j].width
-              Object.assign(that.data.tags[j], { width, height })
-            })
-          }
-        }, 3000)
+          that.autoSize()
+        }, 2000)
       }
     })
+  },
+  autoSize: function () {
+    const that = this
+    for (let j = 0; j < this.data.tags.length; j++) {
+      const obj = wx.createSelectorQuery()
+      obj.selectAll('.tag').boundingClientRect()
+      obj.exec(function (rect) {
+        const height = rect[0][j].height
+        const width = rect[0][j].width
+        // Object.assign(that.data.tags[j], { width, height })
+        that.setData({
+          ['tags['+j+'].height']: height,
+          ['tags['+j+'].width']: width,
+        })
+      })
+    }
   },
   messageInput: function(e) {
     this.setData({
@@ -96,7 +101,11 @@ Page({
         opacity: .7,
         size: 0.8
       }
-      this.data.tags.push(tag)
+      let result = this.data.tags
+      result.push(tag)
+      this.setData({
+        tags: result
+      })
 
       wx.request({
         url: 'http://localhost:3000/add',
@@ -120,6 +129,7 @@ Page({
     this.setData({
       message: ''
     })
+    this.autoDel()
   },
   likes: function (event) {
     const that = this
@@ -128,7 +138,12 @@ Page({
     // 而要传给后端的id都是唯一的,不管中间有没有删除数据,id一直都是顺着+1,所以要用tapTag.num作为id传给后端
     let index = event.currentTarget.dataset.index;
     let tapTag = event.currentTarget.dataset.tag;
-    this.data.tags[index].likes += 1;
+    let _likes = this.data.tags[index].likes
+    _likes += 1
+    this.setData({
+      ['tags['+index+'].likes']: _likes
+    })
+    // this.data.tags[index].likes += 1;
     wx.request({
       url: 'http://localhost:3000/likes',
       // url: 'http://127.20.10.2:3000/likes',
@@ -140,13 +155,24 @@ Page({
       success: function (res) {
       }
     })
-    this.data.tags[index].size += 0.1
+    // this.data.tags[index].size += 0.1
+    let _size = this.data.tags[index].size
+    _size += 0.1
+    this.setData({
+      ['tags['+index+'].size']: _size
+    })
+
   },
   dislikes: function (event) {
     const that = this
     let index = event.currentTarget.dataset.index;
     let tapTag = event.currentTarget.dataset.tag;
-    this.data.tags[index].dislikes += 1
+    let _dislikes = this.data.tags[index].dislikes
+    _dislikes += 1
+    this.setData({
+      ['tags['+index+'].dislikes']: _dislikes
+    })
+    // this.data.tags[index].dislikes += 1
     wx.request({
       url: 'http://localhost:3000/dislikes',
       // url: 'http://127.20.10.2:3000/dislikes',
@@ -158,7 +184,12 @@ Page({
       success: function (res) {
       }
     })
-    this.data.tags[index].size -= 0.1
+    // this.data.tags[index].size -= 0.1
+    let _size = this.data.tags[index].size
+    _size -= 0.1
+    this.setData({
+      ['tags['+index+'].size']: _size
+    })
   },
   delete: function (event) {
     let index = event.currentTarget.dataset.index;
@@ -187,8 +218,13 @@ Page({
       t.y += t.dy
 
       this.setData({
-        [`tags[${i}]`]: t
+        ['tags['+i+'].x']: t.x,
+        ['tags['+i+'].y']: t.y
       })
+
+      // this.setData({
+      //   [`tags[${i}]`]: t
+      // })
     })
   },
   getUserInfo() {
@@ -244,7 +280,7 @@ Page({
 
     setInterval(() => {
       this.fly()
-    }, 30);
+    }, 20);
   },
   /**
    * 生命周期函数--监听页面初次渲染完成
